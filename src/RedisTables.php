@@ -21,7 +21,7 @@ class RedisTables
         protected readonly LoggerInterface $logger,
     ) {
         $this->streamName = self::STREAM_NAME_PREFIX . $streamNameSuffix;
-        $this->lua = new LuaScriptRunner($this->redis, dirname(__DIR__, 2) . '/lua', $this->logger);
+        $this->lua = new LuaScriptRunner($this->redis, dirname(__DIR__) . '/lua', $this->logger);
     }
 
     public function getTable(string $table): mixed
