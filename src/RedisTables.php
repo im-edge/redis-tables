@@ -24,15 +24,19 @@ class RedisTables
         $this->lua = new LuaScriptRunner($this->redis, dirname(__DIR__) . '/lua', $this->logger);
     }
 
-    public function getTable(string $table): mixed
+    public function getTable(string $table): ?array
     {
         $result = $this->lua->runScript('getTable', [$this->streamName, $table]);
-        $this->logger->notice(var_export($result, 1));
-        if ($result !== null) {
+        $this->logger->notice(var_export($result, true));
+        if ($result === null) {
+            return null;
+        }
+        if (is_array($result)) {
             $result[1] = array_map(JsonString::decode(...), RedisResult::toArray($result[1]));
+            return $result;
         }
 
-        return $result;
+        throw new \RuntimeException('RedisTables::getTable() got no array');
     }
 
     public function setTableForDevice(
