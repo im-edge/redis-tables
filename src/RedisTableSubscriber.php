@@ -24,7 +24,7 @@ final class RedisTableSubscriber
     protected RedisClient $redis;
     protected ?CentralInventory $inventory = null;
     protected array $tablePositions = [];
-    protected ?array $xReadParams;
+    protected ?array $xReadParams = null;
     protected bool $stopping = false;
 
     public function __construct(
@@ -56,7 +56,7 @@ final class RedisTableSubscriber
 
     protected function readStreams(): void
     {
-        if ($this->inventory === null) {
+        if ($this->inventory === null || $this->xReadParams === null) {
             return;
         }
 
