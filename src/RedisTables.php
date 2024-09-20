@@ -3,7 +3,7 @@
 namespace IMEdge\RedisTables;
 
 use Amp\Redis\RedisClient;
-use gipfl\Json\JsonString;
+use IMEdge\Json\JsonString;
 use IMEdge\RedisUtils\LuaScriptRunner;
 use IMEdge\RedisUtils\RedisResult;
 use Psr\Log\LoggerInterface;
