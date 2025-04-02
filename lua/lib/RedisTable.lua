@@ -153,6 +153,7 @@ RedisTable.new = function(stream, tableName, checksumLength, keyProperties)
         'key',      key,
         'keyProperties', keyProperties
       )
+      return false
     else
       redis.call(
         'XADD', stream,
@@ -165,6 +166,7 @@ RedisTable.new = function(stream, tableName, checksumLength, keyProperties)
         'keyProperties', keyProperties,
         'value',    row
       )
+      return true
     end
   end
 

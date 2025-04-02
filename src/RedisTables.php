@@ -73,6 +73,20 @@ class RedisTables
         ]))->status;
     }
 
+    public function deleteTableEntry(
+        string $table,
+        string $key,
+        array $keyProperties,
+    ): bool {
+        return $this->lua->runScript('deleteTableEntry', [
+            $this->streamName,
+            $table,
+            40, // strlen($checksum)
+            $key,
+            JsonString::encode($keyProperties)
+        ]);
+    }
+
     protected static function createTableEntry($row): string
     {
         $json = JsonString::encode($row);
