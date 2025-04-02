@@ -163,8 +163,10 @@ RedisTable.new = function(stream, tableName, checksumLength, keyProperties)
         'action',   'delete',
         'table', tableName,
         'key',      key,
-        'keyProperties', keyProperties,
-        'value',    row
+        'keyProperties', keyProperties
+        -- TODO: figure out, why this fails with
+        --   'ERR Lua redis lib command arguments must be strings or integers'
+        -- 'value',    row
       )
       return true
     end
