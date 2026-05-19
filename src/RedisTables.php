@@ -7,6 +7,8 @@ use IMEdge\Json\JsonString;
 use IMEdge\RedisUtils\LuaScriptRunner;
 use IMEdge\RedisUtils\RedisResult;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
+use stdClass;
 
 class RedisTables
 {
@@ -24,6 +26,9 @@ class RedisTables
         $this->lua = new LuaScriptRunner($this->redis, dirname(__DIR__) . '/lua', $this->logger);
     }
 
+    /**
+     * @return ?array{0: string, 1: array<string, mixed>}
+     */
     public function getTable(string $table): ?array
     {
         $result = $this->lua->runScript('getTable', [$this->streamName, $table]);
@@ -36,7 +41,7 @@ class RedisTables
             return $result;
         }
 
-        throw new \RuntimeException('RedisTables::getTable() got no array');
+        throw new RuntimeException('RedisTables::getTable() got no array');
     }
 
     public function setTableForDevice(
@@ -44,7 +49,7 @@ class RedisTables
         string $devicePrefix,
         array $keyProperties,
         array $tables
-    ) {
+    ): string {
         $tables = array_map(self::createTableEntry(...), $tables);
 
         return RedisResult::toHash($this->lua->runScript('setTable', [
@@ -53,15 +58,19 @@ class RedisTables
             40, // strlen($checksum)
             $devicePrefix,
             JsonString::encode($keyProperties),
-        ], self::arrayToLuaTable($tables)))->status;
+        ], self::arrayToLuaTable($tables)))->status
+            ?? throw new RuntimeException('Got no status for ::setTableForDevice()');
     }
 
+    /**
+     * @param string[] $keyProperties
+     */
     public function setTableEntry(
         string $table,
         string $key,
         array $keyProperties,
         mixed $data
-    ) {
+    ): string {
         return RedisResult::toHash($this->lua->runScript('setTableEntry', [
             $this->streamName,
             $table,
@@ -70,9 +79,12 @@ class RedisTables
             JsonString::encode($keyProperties)
         ], [
             self::createTableEntry($data),
-        ]))->status;
+        ]))->status ?? throw new RuntimeException('Got no status for ::setTableEntry()');
     }
 
+    /**
+     * @param string[] $keyProperties
+     */
     public function deleteTableEntry(
         string $table,
         string $key,
@@ -93,6 +105,10 @@ class RedisTables
         return sha1($json) . $json;
     }
 
+    /**
+     * @param array<int|string, mixed> $array
+     * @return array<mixed>
+     */
     protected static function arrayToLuaTable(array $array): array
     {
         $result = [];
